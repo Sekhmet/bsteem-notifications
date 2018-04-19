@@ -2,6 +2,8 @@ const {
   TYPE_VOTE,
   TYPE_TRANSFER_IN,
   TYPE_TRANSFER_OUT,
+  TYPE_REPLY,
+  TYPE_MENTION,
   TYPE_FOLLOW,
   TYPE_REBLOG,
 } = require('../constants');
@@ -26,6 +28,16 @@ module.exports = function getNotificationMessage(notification) {
     case TYPE_TRANSFER_OUT:
       message = {
         body: `You sent ${data.amount} to ${data.to}.`,
+      };
+      break;
+    case TYPE_REPLY:
+      message = {
+        body: `${data.author} replied to your post.`,
+      };
+      break;
+    case TYPE_MENTION:
+      message = {
+        body: `${data.author} mentioned you in their post.`,
       };
       break;
     case TYPE_FOLLOW:

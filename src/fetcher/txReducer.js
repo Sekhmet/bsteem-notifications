@@ -3,9 +3,13 @@ const {
   TYPE_VOTE,
   TYPE_TRANSFER_IN,
   TYPE_TRANSFER_OUT,
+  TYPE_REPLY,
+  TYPE_MENTION,
   TYPE_FOLLOW,
   TYPE_REBLOG,
 } = require('../constants');
+
+const MENTION_REGEX = /@([a-z][-.a-z\d]+[a-z\d])/gi;
 
 function createNotification(type, timestamp, toUser, data) {
   return {
@@ -35,6 +39,20 @@ module.exports = function txReducer(a, tx) {
       }
 
       return [...a, createNotification(TYPE_VOTE, tx.timestamp, data.author, data)];
+
+    case 'comment':
+      if (_.get(data, 'parent_author')) {
+        return [...a, createNotification(TYPE_REPLY, tx.timestamp, data.parent_author, data)];
+      }
+
+      return [
+        ...a,
+        ..._.uniq(data.body.match(MENTION_REGEX))
+          .slice(0, 11)
+          .map(mention =>
+            createNotification(TYPE_MENTION, tx.timestamp, mention.toLowerCase().slice(1), data),
+          ),
+      ];
     case 'custom_json': {
       if (_.get(data, 'id') !== 'follow') return a;
 
