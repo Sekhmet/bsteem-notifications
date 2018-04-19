@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
+const Expo = require('expo-server-sdk');
 const { createQueue } = require('./queue');
 const fetcher = require('./fetcher');
 const initializer = require('./initializer');
@@ -21,9 +22,9 @@ async function start() {
     const token = _.get(req, 'body.token');
     const username = _.get(req, 'body.username');
 
-    if (!token || !username || typeof token !== 'string' || typeof username !== 'string') {
+    if (!token || !username || !Expo.isExpoPushToken(token) || typeof username !== 'string') {
       return res.status(400).send({
-        error: 'token and username of type string are required',
+        error: 'valid token and username are required',
       });
     }
 

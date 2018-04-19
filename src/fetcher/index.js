@@ -1,35 +1,35 @@
 const debug = require('debug')('bsteem-notifications:fetcher');
 const RSMQWorker = require('rsmq-worker');
-const retry = require('async-retry');
+const Expo = require('expo-server-sdk');
 const { STREAM_FETCHERS_QUEUE, PAST_FETCHERS_QUEUE } = require('../constants');
 const fetchBatch = require('./fetchBatch');
 const txReducer = require('./txReducer');
 const mapToToken = require('./mapToToken');
 const getNotificationMessage = require('./getNotificationMessage');
 
+const expo = new Expo();
+
 function createProcessBatch(name, getUsersToken) {
   return async (msg, next, id) => {
-    try {
-      await retry(
-        async () => {
-          debug(name, 'Processing message:', id);
-          const txs = await fetchBatch(msg.split(' '));
+    debug(name, 'Processing message:', id);
+    const txs = await fetchBatch(msg.split(' '));
 
-          const notifications = txs.reduce(txReducer, []);
+    const notifications = txs.reduce(txReducer, []);
 
-          const activeNotifications = await mapToToken(notifications, getUsersToken);
+    const activeNotifications = await mapToToken(notifications, getUsersToken);
 
-          debug(activeNotifications.map(getNotificationMessage));
+    const messages = activeNotifications.map(getNotificationMessage);
 
-          next();
-        },
-        { retries: 5 },
+    console.log('messages', messages);
 
-        // TODO: Delete message.
-      );
-    } catch (err) {
-      debug(name, "Couldn't fetch blocks. Message", id);
+    const chunks = expo.chunkPushNotifications(messages);
+
+    for (let chunk of chunks) {
+      const resp = await expo.sendPushNotificationsAsync(chunk);
+      debug('chunk sent', resp);
     }
+
+    next();
   };
 }
 

@@ -10,10 +10,10 @@
     "start": "node ./src/index.js"
   },
   "dependencies": {
-    "async-retry": "^1.2.1",
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "debug": "^3.1.0",
+    "expo-server-sdk": "^2.3.3",
     "express": "^4.16.3",
     "lightrpc": "1.0.0-beta.5",
     "lodash": "^4.17.5",

@@ -15,32 +15,32 @@ module.exports = function getNotificationMessage(notification) {
   switch (notification.type) {
     case TYPE_VOTE:
       message = {
-        title: `${data.voter} upvoted your post.`,
+        body: `${data.voter} upvoted your post.`,
       };
       break;
     case TYPE_TRANSFER_IN:
       message = {
-        title: `${data.from} sent you ${data.amount}.`,
+        body: `${data.from} sent you ${data.amount}.`,
       };
       break;
     case TYPE_TRANSFER_OUT:
       message = {
-        title: `You sent ${data.amount} to ${data.to}.`,
+        body: `You sent ${data.amount} to ${data.to}.`,
       };
       break;
     case TYPE_FOLLOW:
       message = {
-        title: `${data.follower} started following you.`,
+        body: `${data.follower} started following you.`,
       };
       break;
     case TYPE_REBLOG:
       message = {
-        title: `${data.account} reposted your post.`,
+        body: `${data.account} reposted your post.`,
       };
       break;
     default:
       message = {
-        title: 'Something happened in the app.',
+        body: 'Something happened in the app.',
       };
   }
 
