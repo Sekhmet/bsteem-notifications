@@ -1,4 +1,11 @@
 const _ = require('lodash');
+const {
+  TYPE_VOTE,
+  TYPE_TRANSFER_IN,
+  TYPE_TRANSFER_OUT,
+  TYPE_FOLLOW,
+  TYPE_REBLOG,
+} = require('../constants');
 
 function createNotification(type, timestamp, toUser, data) {
   return {
@@ -8,14 +15,6 @@ function createNotification(type, timestamp, toUser, data) {
     data,
   };
 }
-
-// Notification format
-// const notification = {
-//   type: 'vote',
-//   timestamp: '2018-02-23T12:13:18',
-//   toUser: 'sekhmet',
-//   data: { txData }
-// }
 
 module.exports = function txReducer(a, tx) {
   const name = _.get(tx, 'op[0]');
@@ -27,15 +26,15 @@ module.exports = function txReducer(a, tx) {
     case 'transfer':
       return [
         ...a,
-        createNotification('transfer_out', tx.timestamp, data.from, data),
-        createNotification('transfer_in', tx.timestamp, data.to, data),
+        createNotification(TYPE_TRANSFER_IN, tx.timestamp, data.to, data),
+        createNotification(TYPE_TRANSFER_OUT, tx.timestamp, data.from, data),
       ];
     case 'vote':
-      if (data.voter === data.author) {
+      if (data.voter === data.author && data.weight > 0) {
         return a;
       }
 
-      return [...a, createNotification('vote', tx.timestamp, data.author, data)];
+      return [...a, createNotification(TYPE_VOTE, tx.timestamp, data.author, data)];
     case 'custom_json': {
       if (_.get(data, 'id') !== 'follow') return a;
 
@@ -57,7 +56,7 @@ module.exports = function txReducer(a, tx) {
             return a;
           }
 
-          return [...a, createNotification('reblog', tx.timestamp, author, customData)];
+          return [...a, createNotification(TYPE_REBLOG, tx.timestamp, author, customData)];
         }
         case 'follow': {
           const follower = _.get(customData, 'follower');
@@ -67,7 +66,7 @@ module.exports = function txReducer(a, tx) {
             return a;
           }
 
-          return [...a, createNotification('follow', tx.timestamp, following, customData)];
+          return [...a, createNotification(TYPE_FOLLOW, tx.timestamp, following, customData)];
         }
         default:
           return a;

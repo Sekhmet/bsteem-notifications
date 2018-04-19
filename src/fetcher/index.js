@@ -2,9 +2,10 @@ const debug = require('debug')('bsteem-notifications:fetcher');
 const RSMQWorker = require('rsmq-worker');
 const retry = require('async-retry');
 const { STREAM_FETCHERS_QUEUE, PAST_FETCHERS_QUEUE } = require('../constants');
+const fetchBatch = require('./fetchBatch');
 const txReducer = require('./txReducer');
 const mapToToken = require('./mapToToken');
-const fetchBatch = require('./fetchBatch');
+const getNotificationMessage = require('./getNotificationMessage');
 
 function createProcessBatch(name, getUsersToken) {
   return async (msg, next, id) => {
@@ -16,7 +17,9 @@ function createProcessBatch(name, getUsersToken) {
 
           const notifications = txs.reduce(txReducer, []);
 
-          await mapToToken(notifications, getUsersToken);
+          const activeNotifications = await mapToToken(notifications, getUsersToken);
+
+          debug(activeNotifications.map(getNotificationMessage));
 
           next();
         },
