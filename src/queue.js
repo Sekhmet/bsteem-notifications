@@ -31,6 +31,7 @@ async function createQueue() {
     setCurrentBlock: block => client.setAsync('current_block', block),
     getCurrentBlock: () => client.getAsync('current_block'),
     getUsersToken: users => client.mgetAsync(users.map(user => `userToken:${user}`)),
+    registerUser: (user, token) => client.setAsync(`userToken:${user}`, token),
     stat: async () => {
       const queues = await rsmq.listQueuesAsync();
       return _.zipObject(
