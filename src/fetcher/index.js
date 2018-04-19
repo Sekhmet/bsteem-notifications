@@ -20,14 +20,14 @@ function createProcessBatch(queue, name) {
 
     const messages = activeNotifications.map(getNotificationMessage);
 
-    console.log('messages', messages);
-
     const chunks = expo.chunkPushNotifications(messages);
 
     for (let chunk of chunks) {
       const resp = await expo.sendPushNotificationsAsync(chunk);
       debug('chunk sent', resp);
     }
+
+    await queue.rsmq.deleteMessageAsync({ qname: name, id });
 
     next();
   };
