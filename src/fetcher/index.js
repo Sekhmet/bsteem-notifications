@@ -1,26 +1,24 @@
-const debug = require('debug')('busy-bot:fetcher');
+const debug = require('debug')('bsteem-notifications:fetcher');
 const RSMQWorker = require('rsmq-worker');
 const retry = require('async-retry');
 const { STREAM_FETCHERS_QUEUE, PAST_FETCHERS_QUEUE } = require('../constants');
 const fetchBatch = require('./fetchBatch');
 
-function createProcessBatch(name, queueUpvote) {
+function createProcessBatch(name) {
   return async (msg, next, id) => {
     try {
       await retry(
         async () => {
           debug(name, 'Processing message:', id);
-          const posts = (await fetchBatch(msg.split(' '))).map(tx => {
-            const post = tx.op[1];
-            return `${post.author}/${post.permlink}`;
-          });
+          const txs = await fetchBatch(msg.split(' '));
 
-          const postsPromises = posts.map(queueUpvote);
-          await Promise.all(postsPromises);
+          debug('txs', txs.length);
 
           next();
         },
         { retries: 5 },
+
+        // TODO: Delete message.
       );
     } catch (err) {
       debug(name, "Couldn't fetch blocks. Message", id);
@@ -40,8 +38,8 @@ function worker(rsmq, name, queueUpvote) {
 function start(queue) {
   debug('fetcher started');
 
-  worker(queue.rsmq, STREAM_FETCHERS_QUEUE, queue.queueStreamUpvote);
-  worker(queue.rsmq, PAST_FETCHERS_QUEUE, queue.queuePastUpvote);
+  worker(queue.rsmq, STREAM_FETCHERS_QUEUE);
+  worker(queue.rsmq, PAST_FETCHERS_QUEUE);
 }
 
 module.exports = start;
