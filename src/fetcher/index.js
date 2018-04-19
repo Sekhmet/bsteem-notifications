@@ -9,14 +9,14 @@ const getNotificationMessage = require('./getNotificationMessage');
 
 const expo = new Expo();
 
-function createProcessBatch(name, getUsersToken) {
+function createProcessBatch(queue, name) {
   return async (msg, next, id) => {
     debug(name, 'Processing message:', id);
     const txs = await fetchBatch(msg.split(' '));
 
     const notifications = txs.reduce(txReducer, []);
 
-    const activeNotifications = await mapToToken(notifications, getUsersToken);
+    const activeNotifications = await mapToToken(queue, notifications);
 
     const messages = activeNotifications.map(getNotificationMessage);
 
@@ -33,20 +33,20 @@ function createProcessBatch(name, getUsersToken) {
   };
 }
 
-function worker(rsmq, name, getUsersToken) {
+function worker(queue, name) {
   const worker = new RSMQWorker(name, {
-    rsmq,
+    rsmq: queue.rsmq,
     timeout: 10000,
   });
-  worker.on('message', createProcessBatch(name, getUsersToken));
+  worker.on('message', createProcessBatch(queue, name));
   worker.start();
 }
 
 function start(queue) {
   debug('fetcher started');
 
-  worker(queue.rsmq, STREAM_FETCHERS_QUEUE, queue.getUsersToken);
-  worker(queue.rsmq, PAST_FETCHERS_QUEUE, queue.getUsersToken);
+  worker(queue, STREAM_FETCHERS_QUEUE);
+  worker(queue, PAST_FETCHERS_QUEUE);
 }
 
 module.exports = start;

@@ -52,7 +52,7 @@ async function start() {
         return res.sendStatus(401);
       }
 
-      await queue.registerUser(username, token);
+      await queue.registerUserDevice(username, token);
       return res.send({
         message: 'registered',
       });

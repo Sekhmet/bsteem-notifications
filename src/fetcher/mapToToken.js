@@ -1,29 +1,39 @@
 const _ = require('lodash');
 
-module.exports = async function mapToToken(notifications, getUsersToken) {
+module.exports = async function mapToToken(queue, notifications) {
   const usernames = _.uniq(_.map(notifications, notification => notification.toUser));
-  const dbUsers = await getUsersToken(usernames);
+  const dbUsers = await queue.getUsersRegistered(usernames);
 
-  let tokens = {};
+  const registeredUsers = _.reduce(
+    usernames,
+    (a, b, i) => {
+      if (!dbUsers[i]) return a;
 
-  usernames.forEach((username, i) => {
-    tokens[username] = dbUsers[i];
-  });
+      return [...a, b];
+    },
+    [],
+  );
+
+  const userTokens = {};
+
+  for (let user of registeredUsers) {
+    userTokens[user] = await queue.getUserTokens(user);
+  }
 
   return _.reduce(
     notifications,
     (a, b) => {
-      const token = tokens[b.toUser];
-
-      if (!token) return a;
+      const tokens = userTokens[b.toUser];
 
       return [
         ...a,
-        Object.assign(
-          {
-            token,
-          },
-          b,
+        ..._.map(tokens, token =>
+          Object.assign(
+            {
+              token,
+            },
+            b,
+          ),
         ),
       ];
     },
