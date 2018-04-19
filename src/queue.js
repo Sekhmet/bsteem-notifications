@@ -14,7 +14,7 @@ async function createQueue() {
   const rsmq = new RedisSMQ({ client });
   try {
     const streamFetchersQueue = await rsmq.createQueueAsync({ qname: STREAM_FETCHERS_QUEUE });
-    if (fetchersQueue === 1) {
+    if (streamFetchersQueue === 1) {
       debug('created stream fetchers queue');
     }
 
@@ -30,6 +30,7 @@ async function createQueue() {
     rsmq,
     setCurrentBlock: block => client.setAsync('current_block', block),
     getCurrentBlock: () => client.getAsync('current_block'),
+    getUsersToken: users => client.mgetAsync(users.map(user => `userToken:${user}`)),
     stat: async () => {
       const queues = await rsmq.listQueuesAsync();
       return _.zipObject(

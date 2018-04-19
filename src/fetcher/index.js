@@ -3,9 +3,10 @@ const RSMQWorker = require('rsmq-worker');
 const retry = require('async-retry');
 const { STREAM_FETCHERS_QUEUE, PAST_FETCHERS_QUEUE } = require('../constants');
 const txReducer = require('./txReducer');
+const mapToToken = require('./mapToToken');
 const fetchBatch = require('./fetchBatch');
 
-function createProcessBatch(name) {
+function createProcessBatch(name, getUsersToken) {
   return async (msg, next, id) => {
     try {
       await retry(
@@ -15,7 +16,7 @@ function createProcessBatch(name) {
 
           const notifications = txs.reduce(txReducer, []);
 
-          debug('notifications', notifications);
+          await mapToToken(notifications, getUsersToken);
 
           next();
         },
@@ -29,20 +30,20 @@ function createProcessBatch(name) {
   };
 }
 
-function worker(rsmq, name, queueUpvote) {
+function worker(rsmq, name, getUsersToken) {
   const worker = new RSMQWorker(name, {
     rsmq,
     timeout: 10000,
   });
-  worker.on('message', createProcessBatch(name, queueUpvote));
+  worker.on('message', createProcessBatch(name, getUsersToken));
   worker.start();
 }
 
 function start(queue) {
   debug('fetcher started');
 
-  worker(queue.rsmq, STREAM_FETCHERS_QUEUE);
-  worker(queue.rsmq, PAST_FETCHERS_QUEUE);
+  worker(queue.rsmq, STREAM_FETCHERS_QUEUE, queue.getUsersToken);
+  worker(queue.rsmq, PAST_FETCHERS_QUEUE, queue.getUsersToken);
 }
 
 module.exports = start;
