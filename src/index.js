@@ -7,6 +7,7 @@ const sc2 = require('sc2-sdk');
 const { createQueue } = require('./queue');
 const fetcher = require('./fetcher');
 const initializer = require('./initializer');
+const router = require('./routes');
 
 const PORT = process.env.PORT || 3000;
 
@@ -19,7 +20,9 @@ async function start() {
   fetcher(queue);
   initializer(queue);
 
-  app.get('/', async (req, res) => res.send(await queue.stat()));
+  app.locals.queue = queue;
+  app.use('/', router);
+
   app.post('/register', async (req, res) => {
     const token = _.get(req, 'body.token');
     const username = _.get(req, 'body.username');
