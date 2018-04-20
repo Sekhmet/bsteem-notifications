@@ -2,10 +2,14 @@ const debug = require('debug')('bsteem-notifications:fetcher');
 const RSMQWorker = require('rsmq-worker');
 const Expo = require('expo-server-sdk');
 const { STREAM_FETCHERS_QUEUE, PAST_FETCHERS_QUEUE } = require('../constants');
+const { Notification } = require('../models');
 const fetchBatch = require('./fetchBatch');
 const txReducer = require('./txReducer');
-const mapToToken = require('./mapToToken');
-const getNotificationMessage = require('./getNotificationMessage');
+const {
+  getActiveNotifications,
+  getPushNotifications,
+  getNotificationMessage,
+} = require('./notifications');
 
 const expo = new Expo();
 
@@ -16,9 +20,11 @@ function createProcessBatch(queue, name) {
 
     const notifications = txs.reduce(txReducer, []);
 
-    const activeNotifications = await mapToToken(notifications);
+    const activeNotifications = await getActiveNotifications(notifications);
+    await Notification.insertNotifications(activeNotifications);
 
-    const messages = activeNotifications.map(getNotificationMessage);
+    const pushNotifications = await getPushNotifications(notifications);
+    const messages = pushNotifications.map(getNotificationMessage);
 
     const chunks = expo.chunkPushNotifications(messages);
 

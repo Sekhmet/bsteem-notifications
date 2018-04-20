@@ -1,11 +1,12 @@
 const express = require('express');
 const validTokenMiddleware = require('../middlewares/validToken');
-const { Token } = require('../models');
+const { Notification, Token } = require('../models');
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  res.send('listing notifications.');
+router.get('/', async (req, res) => {
+  const notifications = await Notification.find({ owner: req.user.name });
+  res.send(notifications);
 });
 
 router.get('/register', validTokenMiddleware, async (req, res) => {
