@@ -5,7 +5,20 @@ const { Notification, Token } = require('../models');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const notifications = await Notification.find({ owner: req.user.name });
+  const limit = Math.min(req.query.limit || 50, 200);
+  const start = req.query.start;
+
+  let query = {
+    owner: req.user.name,
+  };
+
+  if (start) {
+    query = Object.assign({}, query, {
+      _id: { $gt: start },
+    });
+  }
+
+  const notifications = await Notification.find(query).limit(limit);
   res.send(notifications);
 });
 
