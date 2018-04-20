@@ -34,7 +34,7 @@ module.exports = function txReducer(a, tx) {
         createNotification(TYPE_TRANSFER_OUT, tx.timestamp, data.from, data),
       ];
     case 'vote':
-      if (data.voter === data.author && data.weight > 0) {
+      if (data.voter === data.author && data.weight !== 0) {
         return a;
       }
 
@@ -79,8 +79,9 @@ module.exports = function txReducer(a, tx) {
         case 'follow': {
           const follower = _.get(customData, 'follower');
           const following = _.get(customData, 'following');
+          const what = _.get(customData, 'what[0]');
 
-          if (!follower || !following) {
+          if (!follower || !following || what !== 'blog') {
             return a;
           }
 

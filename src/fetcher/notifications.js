@@ -78,7 +78,10 @@ function getNotificationMessage(notification) {
   switch (notification.type) {
     case TYPE_VOTE:
       message = {
-        body: `${data.voter} upvoted your post.`,
+        body:
+          data.weight > 0
+            ? `${data.voter} upvoted your post.`
+            : `${data.voter} downvoted your post.`,
       };
       break;
     case TYPE_TRANSFER_IN:
