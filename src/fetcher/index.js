@@ -16,7 +16,7 @@ function createProcessBatch(queue, name) {
 
     const notifications = txs.reduce(txReducer, []);
 
-    const activeNotifications = await mapToToken(queue, notifications);
+    const activeNotifications = await mapToToken(notifications);
 
     const messages = activeNotifications.map(getNotificationMessage);
 

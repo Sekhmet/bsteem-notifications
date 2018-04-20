@@ -1,24 +1,20 @@
 const _ = require('lodash');
+const { Token } = require('../models');
 
-module.exports = async function mapToToken(queue, notifications) {
+module.exports = async function mapToToken(notifications) {
   const usernames = _.uniq(_.map(notifications, notification => notification.toUser));
-  const dbUsers = await queue.getUsersRegistered(usernames);
 
-  const registeredUsers = _.reduce(
-    usernames,
-    (a, b, i) => {
-      if (!dbUsers[i]) return a;
-
-      return [...a, b];
-    },
-    [],
-  );
+  const tokens = await Token.find({ owner: { $in: usernames } });
 
   const userTokens = {};
 
-  for (let user of registeredUsers) {
-    userTokens[user] = await queue.getUserTokens(user);
-  }
+  tokens.forEach(token => {
+    if (!userTokens[token.owner]) {
+      userTokens[token.owner] = [];
+    }
+
+    userTokens[token.owner].push(token.value);
+  });
 
   return _.reduce(
     notifications,

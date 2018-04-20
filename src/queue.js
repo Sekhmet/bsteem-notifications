@@ -30,19 +30,6 @@ async function createQueue() {
     rsmq,
     setCurrentBlock: block => client.setAsync('current_block', block),
     getCurrentBlock: () => client.getAsync('current_block'),
-    getUsersRegistered: users => client.mgetAsync(users.map(user => `userRegistered:${user}`)),
-    getUserTokens: user => client.smembersAsync(`userTokens:${user}`),
-    registerUserDevice: async (user, token) => {
-      await client.setAsync(`userRegistered:${user}`, true);
-      await client.saddAsync(`userTokens:${user}`, token);
-    },
-    unregisterUserDevice: async (user, token) => {
-      await client.sremAsync(`userTokens:${user}`, token);
-      const tokensLeft = await client.scardAsync(`userTokens:${user}`);
-      if (tokensLeft === 0) {
-        await client.delAsync(`userRegistered:${user}`);
-      }
-    },
     stat: async () => {
       const queues = await rsmq.listQueuesAsync();
       return _.zipObject(
