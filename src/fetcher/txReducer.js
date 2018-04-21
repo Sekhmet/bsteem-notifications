@@ -40,8 +40,10 @@ module.exports = function txReducer(a, tx) {
 
       return [...a, createNotification(TYPE_VOTE, tx.timestamp, data.author, data)];
 
-    case 'comment':
-      if (_.get(data, 'parent_author')) {
+    case 'comment': {
+      const author = _.get(data, 'author');
+      const parentAuthor = _.get(data, 'parent_author');
+      if (parentAuthor && parentAuthor !== author) {
         return [...a, createNotification(TYPE_REPLY, tx.timestamp, data.parent_author, data)];
       }
 
@@ -49,10 +51,11 @@ module.exports = function txReducer(a, tx) {
         ...a,
         ..._.uniq(data.body.match(MENTION_REGEX))
           .slice(0, 11)
-          .map(mention =>
-            createNotification(TYPE_MENTION, tx.timestamp, mention.toLowerCase().slice(1), data),
-          ),
+          .map(mention => mention.toLowerCase().slice(1))
+          .filter(mention => mention !== author)
+          .map(mention => createNotification(TYPE_MENTION, tx.timestamp, mention, data)),
       ];
+    }
     case 'custom_json': {
       if (_.get(data, 'id') !== 'follow') return a;
 
