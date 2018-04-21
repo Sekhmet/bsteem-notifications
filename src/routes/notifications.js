@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
   res.send(notifications);
 });
 
-router.get('/register', validTokenMiddleware, async (req, res) => {
+router.post('/register', validTokenMiddleware, async (req, res) => {
   try {
     await Token.create({
       owner: req.user.name,
@@ -37,7 +37,7 @@ router.get('/register', validTokenMiddleware, async (req, res) => {
   }
 });
 
-router.get('/unregister', validTokenMiddleware, async (req, res) => {
+router.post('/unregister', validTokenMiddleware, async (req, res) => {
   try {
     await Token.remove({ value: req.expoToken });
 
