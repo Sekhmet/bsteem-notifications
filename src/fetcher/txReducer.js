@@ -43,18 +43,18 @@ module.exports = function txReducer(a, tx) {
     case 'comment': {
       const author = _.get(data, 'author');
       const parentAuthor = _.get(data, 'parent_author');
+
+      const notifications = _.uniq(data.body.match(MENTION_REGEX))
+        .slice(0, 11)
+        .map(mention => mention.toLowerCase().slice(1))
+        .filter(mention => mention !== author)
+        .map(mention => createNotification(TYPE_MENTION, tx.timestamp, mention, data));
+
       if (parentAuthor && parentAuthor !== author) {
-        return [...a, createNotification(TYPE_REPLY, tx.timestamp, data.parent_author, data)];
+        notifications.push(createNotification(TYPE_REPLY, tx.timestamp, data.parent_author, data));
       }
 
-      return [
-        ...a,
-        ..._.uniq(data.body.match(MENTION_REGEX))
-          .slice(0, 11)
-          .map(mention => mention.toLowerCase().slice(1))
-          .filter(mention => mention !== author)
-          .map(mention => createNotification(TYPE_MENTION, tx.timestamp, mention, data)),
-      ];
+      return [...a, ...notifications];
     }
     case 'custom_json': {
       if (_.get(data, 'id') !== 'follow') return a;
