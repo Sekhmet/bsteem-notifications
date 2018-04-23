@@ -33,6 +33,11 @@ router.post('/register', validTokenMiddleware, async (req, res) => {
       message: 'registered',
     });
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).send({
+        error: 'already registered with this token',
+      });
+    }
     return res.sendStatus(500);
   }
 });
