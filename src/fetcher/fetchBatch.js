@@ -1,13 +1,7 @@
-const _ = require('lodash');
 const api = require('../api');
 
 async function fetchBatch(batch) {
-  const requests = batch.map(block => ({
-    method: 'get_ops_in_block',
-    params: [block],
-  }));
-
-  return await api.sendBatchAsync(requests, null).reduce((a, b) => [...a, ...b], []);
+  return await api.sendAsync('get_ops_in_block', [batch[0]]);
 }
 
 module.exports = fetchBatch;

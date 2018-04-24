@@ -1,7 +1,9 @@
 const bluebird = require('bluebird');
-const Client = require('lightrpc');
+const { createClient } = require('lightrpc');
 const { API } = require('./constants');
 
-bluebird.promisifyAll(Client.prototype);
+const client = createClient(API);
 
-module.exports = new Client(API);
+bluebird.promisifyAll(client);
+
+module.exports = client;

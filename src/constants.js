@@ -1,7 +1,7 @@
 module.exports = {
   API: 'https://api.steemit.com',
   SLEEP_TIME: 15 * 1000,
-  BLOCKS_PER_PATCH: 50,
+  BLOCKS_PER_BATCH: 1,
   HISTORY_BLOCKS: 20 * 5, // 5 minutes
   STREAM_FETCHERS_QUEUE: 'STREAM_FETCHERS_QUEUE',
   PAST_FETCHERS_QUEUE: 'PAST_FETCHERS_QUEUE',

@@ -757,9 +757,9 @@ levn@^0.3.0, levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-lightrpc@1.0.0-beta.5:
-  version "1.0.0-beta.5"
-  resolved "https://registry.yarnpkg.com/lightrpc/-/lightrpc-1.0.0-beta.5.tgz#a86dc648307be93d7cefc333930df522520cd68a"
+lightrpc@0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/lightrpc/-/lightrpc-0.0.5.tgz#b33b2207113922f27cae4a3a769afba531300ec5"
   dependencies:
     cross-fetch "^1.1.1"
 
