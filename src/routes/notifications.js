@@ -18,7 +18,9 @@ router.get('/', async (req, res) => {
     });
   }
 
-  const notifications = await Notification.find(query).limit(limit);
+  const notifications = await Notification.find(query)
+    .limit(limit)
+    .sort('-broadcast_at');
   res.send(notifications);
 });
 
